@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, Easing } from 'react-native';
+import Animated, { Easing } from 'react-native-reanimated';
 import { ViewPropTypes } from './config';
 
 const ANIMATED_EASING_PREFIXES = ['easeInOut', 'easeOut', 'easeIn'];
+const { timing, interpolate, Value } = Animated;
 
 export default class Collapsible extends Component {
   static propTypes = {
@@ -33,7 +34,7 @@ export default class Collapsible extends Component {
     this.state = {
       measuring: false,
       measured: false,
-      height: new Animated.Value(props.collapsedHeight),
+      height: new Value(props.collapsedHeight),
       contentHeight: 0,
       animating: false,
     };
@@ -146,7 +147,7 @@ export default class Collapsible extends Component {
       this._animation.stop();
     }
     this.setState({ animating: true });
-    this._animation = Animated.timing(this.state.height, {
+    this._animation = timing(this.state.height, {
       toValue: height,
       duration,
       easing,
@@ -191,23 +192,39 @@ export default class Collapsible extends Component {
       contentStyle.position = 'absolute';
       contentStyle.opacity = 0;
     } else if (this.props.align === 'center') {
-      contentStyle.transform = [
-        {
-          translateY: height.interpolate({
+      this.contentHandle.setNativeProps({
+        style: {
+          height: interpolate(height, {
             inputRange: [0, contentHeight],
             outputRange: [contentHeight / -2, 0],
           }),
         },
-      ];
+      });
+      // contentStyle.transform = [
+      //   {
+      //     translateY: interpolate(height, {
+      //       inputRange: [0, contentHeight],
+      //       outputRange: [contentHeight / -2, 0],
+      //     }),
+      //   },
+      // ];
     } else if (this.props.align === 'bottom') {
-      contentStyle.transform = [
-        {
-          translateY: height.interpolate({
+      this.contentHandle.setNativeProps({
+        style: {
+          height: interpolate(height, {
             inputRange: [0, contentHeight],
-            outputRange: [-contentHeight, 0],
+            outputRange: [contentHeight / -2, 0],
           }),
         },
-      ];
+      });
+      // contentStyle.transform = [
+      //   {
+      //     translateY: interpolate(height, {
+      //       inputRange: [0, contentHeight],
+      //       outputRange: [-contentHeight, 0],
+      //     }),
+      //   },
+      // ];
     }
     return (
       <Animated.View
